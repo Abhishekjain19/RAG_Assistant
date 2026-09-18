@@ -387,6 +387,57 @@
       $("#scroll-fab").hidden = dist < 200;
     });
     $("#scroll-fab").onclick = () => box.scrollTo({ top: box.scrollHeight, behavior: "smooth" });
+    renderStarterChips();
+  }
+
+  function renderStarterChips() {
+    const container = $("#starter-chips");
+    if (!container) return;
+
+    // 1. Check direct suggested questions from analysis
+    let questions = (state.results?.suggested_questions || [])
+      .concat(state.results?.discussion_points || [])
+      .map((q) => String(q || "").trim())
+      .filter((q) => q && !/^no\s+.+\s+found\.?$/i.test(q))
+      .map((q) => {
+        let clean = q.replace(/^(\d+[\.\)]\s*|[-*•]\s*)/, "").trim();
+        // Convert discussion points to question format if needed
+        if (!clean.endsWith("?")) {
+          clean = `What was discussed regarding ${clean.toLowerCase().replace(/\.$/, "")}?`;
+        }
+        if (clean.length > 70) clean = clean.slice(0, 67) + "…";
+        return clean;
+      });
+
+    // Deduplicate questions
+    questions = Array.from(new Set(questions));
+
+    // If still empty, formulate context-based questions using meeting title or transcript key topics
+    if (!questions.length) {
+      const title = (state.results?.title || "").replace(/meeting notes/i, "").trim();
+      if (title) {
+        questions.push(
+          `What are the main takeaways regarding ${title}?`,
+          `What challenges were mentioned about ${title}?`
+        );
+      }
+    }
+
+    if (!questions.length) {
+      container.hidden = true;
+      container.innerHTML = "";
+      return;
+    }
+
+    const chipsToShow = questions.slice(0, 5);
+    container.innerHTML = chipsToShow
+      .map((q) => `<button type="button">${escapeHtml(q)}</button>`)
+      .join("");
+    container.hidden = false;
+
+    $$("button", container).forEach((btn) => {
+      btn.addEventListener("click", () => sendChat(btn.textContent));
+    });
   }
 
   function appendMessage(role, text) {
@@ -518,7 +569,6 @@
       }
       sendChat(input.value.trim());
     });
-    $$("#starter-chips button").forEach((b) => b.addEventListener("click", () => sendChat(b.textContent)));
     $("#sources-toggle").addEventListener("click", () => $("#sources-panel").classList.toggle("is-open"));
   }
 

@@ -15,13 +15,13 @@ def _rag_prompt():
         [
             (
                 "system",
-                """You are an expert meeting assistant. Answer the user's question 
-based ONLY on the meeting transcript context provided below.
+                """You are an expert meeting assistant. Answer the user's question accurately based on the meeting transcript context provided below.
 
-If the answer is not found in the context, say: 
-"I could not find this information in the meeting transcript."
-
-Always be concise and precise. If quoting someone, mention it clearly.
+Rules:
+1. Ground your answer in the provided transcript context.
+2. Pay close attention to numbers, names, roles, titles, acronyms, and specific details.
+3. Be direct, concise, and helpful.
+4. Only say "I could not find this information in the meeting transcript." if the information is truly not mentioned or cannot be inferred from the context.
 
 Context from meeting transcript:
 {context}""",
@@ -33,7 +33,7 @@ Context from meeting transcript:
 
 def build_rag_chain(transcript: str):
     vector_store = build_vector_store(transcript)
-    retriever = get_retriever(vector_store, k=4)
+    retriever = get_retriever(vector_store, k=8, search_type="mmr")
     llm = get_llm()
 
     return (

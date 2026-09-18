@@ -14,45 +14,63 @@ def get_embeddings():
         model_kwargs = {"device" : 'cpu'}
     )
 
-def build_vector_store(transcript : str)->Chroma:
-    print("Building vector Store")
+def build_vector_store(transcript: str, persist_directory: str = CHROMA_DIR) -> Chroma:
+    print("Building vector Store...")
 
     splitter = RecursiveCharacterTextSplitter(
-        chunk_size = 500,
-        chunk_overlap = 50
+        chunk_size=1000,
+        chunk_overlap=150,
+        separators=["\n\n", "\n", ". ", " ", ""],
     )
     chunks = splitter.split_text(transcript)
 
     docs = [
-        Document(page_content=chunk, metadata = {'chunk_index' : i})
-        for i,chunk in enumerate(chunks)
+        Document(page_content=chunk, metadata={'chunk_index': i})
+        for i, chunk in enumerate(chunks)
     ]
 
     embeddings = get_embeddings()
+
+    # Reset existing collection if present to avoid cross-meeting document pollution
+    try:
+        existing = Chroma(
+            collection_name=COLLECTION_NAME,
+            embedding_function=embeddings,
+            persist_directory=persist_directory,
+        )
+        existing.delete_collection()
+    except Exception:
+        pass
+
     vector_store = Chroma.from_documents(
-        documents= docs,
+        documents=docs,
         embedding=embeddings,
         collection_name=COLLECTION_NAME,
-        persist_directory=CHROMA_DIR
+        persist_directory=persist_directory,
     )
 
     return vector_store
 
 
-
-def load_vector_store() ->Chroma:
+def load_vector_store(persist_directory: str = CHROMA_DIR) -> Chroma:
     embeddings = get_embeddings()
     vector_store = Chroma(
         collection_name=COLLECTION_NAME,
-        embedding_function= embeddings,
-        persist_directory=CHROMA_DIR
+        embedding_function=embeddings,
+        persist_directory=persist_directory,
     )
 
     return vector_store
 
-def get_retriever(vector_store : Chroma, k :int = 4):
+
+def get_retriever(vector_store: Chroma, k: int = 8, search_type: str = "mmr"):
+    if search_type == "mmr":
+        return vector_store.as_retriever(
+            search_type="mmr",
+            search_kwargs={"k": k, "fetch_k": 20, "lambda_mult": 0.7},
+        )
     return vector_store.as_retriever(
-        search_type = 'similarity',
-        search_kwargs = {"k":k}
+        search_type="similarity",
+        search_kwargs={"k": k},
     )
 

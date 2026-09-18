@@ -12,6 +12,7 @@ _SECTION_MARKERS = (
     ("key_decisions", "## KEY DECISIONS"),
     ("discussion_points", "## DISCUSSION POINTS"),
     ("open_questions", "## OPEN QUESTIONS"),
+    ("suggested_questions", "## SUGGESTED QUESTIONS"),
 )
 
 _EMPTY = {
@@ -21,6 +22,7 @@ _EMPTY = {
     "key_decisions": "No key decisions found.",
     "discussion_points": "",
     "open_questions": "",
+    "suggested_questions": "",
 }
 
 _cache: dict[int, dict] = {}
@@ -40,7 +42,8 @@ def _chain(llm):
                     "## SUMMARY\n"
                     "## ACTION ITEMS\n"
                     "## KEY DECISIONS\n"
-                    "## DISCUSSION POINTS\n\n"
+                    "## DISCUSSION POINTS\n"
+                    "## SUGGESTED QUESTIONS\n\n"
                     "Rules for the content under each heading:\n"
                     "- Plain text only. Do not use # headings, **, __, or code fences in the content.\n"
                     "- TITLE: max 8 words, no quotes, no markdown.\n"
@@ -50,6 +53,7 @@ def _chain(llm):
                     "- KEY DECISIONS: numbered list of plain sentences.\n"
                     "- DISCUSSION POINTS: 4 to 8 numbered topics actually discussed in the meeting. "
                     "Each item is one or two sentences. Do not write 'No open questions found.'\n"
+                    "- SUGGESTED QUESTIONS: 3 to 5 insightful, relevant follow-up questions someone might ask about this specific meeting transcript. Each as a numbered question ending with a question mark.\n"
                     "If a section truly has nothing, write a single line like 'No action items found.'",
                 ),
                 ("human", "{text}"),

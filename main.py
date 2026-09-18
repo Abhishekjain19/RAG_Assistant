@@ -458,6 +458,7 @@ def run_session_job(session_id: str) -> None:
             "discussion_points": analysis.get("discussion_points")
             or analysis.get("open_questions")
             or "",
+            "suggested_questions": analysis.get("suggested_questions") or "",
         }
         emit(session, "summarising", "done", "Summary ready")
 
@@ -472,6 +473,7 @@ def run_session_job(session_id: str) -> None:
             "key_decisions": _split_list(insights["key_decisions"]),
             "action_items": action_items,
             "discussion_points": _split_list(insights["discussion_points"]),
+            "suggested_questions": _split_list(insights["suggested_questions"]),
             "transcript": transcript,
             "duration_seconds": duration,
             "word_count": len(transcript.split()),
