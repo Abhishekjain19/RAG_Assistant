@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MeetingAI — Turn recordings into insights</title>
+  <meta name="description" content="MeetingAI uses Whisper and Gemini to automatically transcribe, summarise and extract action items from your meetings." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/style.css?v=3" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+</head>
+<body>
+  <nav class="nav" id="nav">
+    <a href="#view-landing" class="nav__logo" data-view="view-landing">MeetingAI</a>
+    <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Toggle dark mode">
+      <svg class="icon-sun" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="4"></circle>
+        <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path>
+      </svg>
+      <svg class="icon-moon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M21 14.5A8.5 8.5 0 1 1 9.5 3 7 7 0 0 0 21 14.5z"></path>
+      </svg>
+    </button>
+  </nav>
+
+  <main>
+    <section id="view-landing" class="view view--active">
+      <div class="hero">
+        <div class="hero__bg" aria-hidden="true"></div>
+        <h1 class="hero__title fade-up">MeetingAI</h1>
+        <p class="hero__tagline fade-up">Turn recordings into decisions, actions, and a searchable transcript.</p>
+        <button class="btn btn--primary" type="button" data-view="view-upload">
+          Start analysing &rarr;
+        </button>
+        <div class="feature-grid">
+          <article class="feature-card fade-up stagger-1">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3z"/><path d="M19 10v1a7 7 0 0 1-14 0v-1"/><line x1="12" y1="18" x2="12" y2="21"/></svg>
+            <h3>Transcribe</h3>
+            <p>Local Whisper, no data leaves your machine</p>
+          </article>
+          <article class="feature-card fade-up stagger-2">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l1.5 4.5L18 9l-4.5 1.5L12 15l-1.5-4.5L6 9l4.5-1.5L12 3z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8L19 15z"/></svg>
+            <h3>Summarise</h3>
+            <p>Gemini extracts decisions and action items</p>
+          </article>
+          <article class="feature-card fade-up stagger-3">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H8l-5 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            <h3>Chat</h3>
+            <p>Ask anything about your meeting via RAG</p>
+          </article>
+        </div>
+      </div>
+      <section class="how" id="how-it-works">
+        <h2>How it works</h2>
+        <p>From audio to actionable insights in four steps.</p>
+        <ol class="stepper">
+          <li>
+            <span class="stepper__num">1</span>
+            <strong>Upload</strong>
+            <p>Drop a file or paste a YouTube URL</p>
+          </li>
+          <li>
+            <span class="stepper__num">2</span>
+            <strong>Transcribe</strong>
+            <p>Local Whisper turns speech into text</p>
+          </li>
+          <li>
+            <span class="stepper__num">3</span>
+            <strong>Analyse</strong>
+            <p>Gemini writes title, summary, decisions, and actions</p>
+          </li>
+          <li>
+            <span class="stepper__num">4</span>
+            <strong>Chat</strong>
+            <p>Ask follow-ups grounded in the transcript</p>
+          </li>
+        </ol>
+      </section>
+    </section>
+
+    <section id="view-upload" class="view">
+      <div class="page">
+        <button class="back-link" type="button" data-view="view-landing">← Back</button>
+        <h1>Analyse a meeting</h1>
+        <div class="tabs" role="tablist">
+          <button class="tabs__btn is-active" type="button" data-tab="file">Upload file</button>
+          <button class="tabs__btn" type="button" data-tab="youtube">YouTube URL</button>
+        </div>
+        <div id="panel-file" class="tab-panel is-active">
+          <div class="dropzone" id="dropzone">
+            <p>Drag and drop audio or video here, or click to browse</p>
+            <div class="badges">
+              <span>MP3</span><span>MP4</span><span>WAV</span><span>M4A</span><span>WEBM</span>
+            </div>
+            <input id="file-input" type="file" accept=".mp3,.mp4,.wav,.m4a,.webm,audio/*,video/*" hidden />
+            <div class="file-meta" id="file-meta" hidden></div>
+          </div>
+        </div>
+        <div id="panel-youtube" class="tab-panel">
+          <label class="url-field">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+            <input id="youtube-url" type="url" placeholder="https://www.youtube.com/watch?v=…" />
+            <span class="url-check" id="url-check" hidden>✓</span>
+          </label>
+          <p class="field-error" id="url-error" hidden>Enter a valid YouTube URL</p>
+        </div>
+        <div class="options">
+          <label>
+            Language
+            <select id="language">
+              <option value="auto">Auto-detect</option>
+              <option value="english" selected>English</option>
+              <option value="hindi">Hindi (auto-translate to English)</option>
+            </select>
+          </label>
+          <label>
+            Quality
+            <select id="quality">
+              <option value="tiny">Tiny (fast, less accurate) (~1GB)</option>
+              <option value="base">Base (~1GB)</option>
+              <option value="small" selected>Small (~2GB)</option>
+              <option value="medium">Medium (best) (~5GB)</option>
+            </select>
+          </label>
+        </div>
+        <button class="btn btn--primary" id="analyse-btn" type="button" disabled>
+          <span class="btn__label">Analyse meeting</span>
+          <svg class="spinner" width="18" height="18" viewBox="0 0 24 24" hidden><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2" fill="none" stroke-dasharray="40" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+    </section>
+
+    <section id="view-processing" class="view">
+      <div class="process-card">
+        <h2>Analysing your meeting <span class="pulse-dot"></span></h2>
+        <ol class="process-steps" id="process-steps"></ol>
+        <div class="model-bar">
+          <span class="pill" data-pill="whisper">Whisper <em id="pill-whisper-size">small</em></span>
+          <span class="pill" data-pill="gemini">Gemini API</span>
+          <span class="pill" data-pill="chroma">ChromaDB</span>
+        </div>
+        <div class="complete-burst" id="complete-burst" hidden>Complete!</div>
+        <p class="inline-error" id="process-error" hidden></p>
+        <button class="btn btn--primary" id="retry-btn" type="button" hidden>Retry</button>
+      </div>
+    </section>
+
+    <section id="view-results" class="view">
+      <header class="results-header">
+        <div class="results-header__row">
+          <h1 id="meeting-title" contenteditable="true" spellcheck="false"></h1>
+          <button class="icon-btn" type="button" title="Edit title" id="title-edit">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>
+          </button>
+          <button class="btn btn--ghost" type="button" id="new-analysis">New analysis</button>
+        </div>
+        <div class="meta-row" id="meta-row"></div>
+      </header>
+      <div class="results-workspace">
+        <section class="chat-pane" id="chat-pane">
+          <div class="chat-idle" id="chat-idle">
+            <h2>Chat with this transcript</h2>
+            <p>Ask follow-up questions about the meeting. Answers stay grounded in the transcript.</p>
+            <button class="btn btn--primary" id="open-chat" type="button">Chat with transcript</button>
+          </div>
+          <div class="chat-thread" id="chat-thread" hidden>
+            <header class="chat-header">
+              <h2 id="chat-title">Chat</h2>
+              <button class="icon-btn" id="close-chat" type="button" title="Hide chat">✕</button>
+            </header>
+            <div class="chips" id="starter-chips">
+              <button type="button">What were the key decisions?</button>
+              <button type="button">Who has action items?</button>
+              <button type="button">What was left unresolved?</button>
+              <button type="button">Give me a one-line summary</button>
+              <button type="button">Who attended?</button>
+            </div>
+            <div class="messages" id="messages"></div>
+            <button class="scroll-fab" id="scroll-fab" type="button" hidden>↓</button>
+            <form class="composer" id="composer">
+              <textarea id="chat-input" rows="1" placeholder="Ask anything about this meeting…"></textarea>
+              <button class="send-btn" id="send-btn" type="submit" disabled aria-label="Send">
+                <svg class="icon-send" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+                <svg class="icon-stop" width="18" height="18" viewBox="0 0 24 24" hidden><rect x="6" y="6" width="12" height="12" rx="2" fill="currentColor"/></svg>
+              </button>
+            </form>
+            <details class="fold fold--nested" id="sources-panel">
+              <summary>Sources used</summary>
+              <div class="fold-body">
+                <p class="sources-empty" id="sources-empty">Sources will appear here after your first question</p>
+                <div id="sources-list"></div>
+              </div>
+            </details>
+          </div>
+        </section>
+        <aside class="insights-pane">
+          <details class="fold" id="download-fold">
+            <summary>Download options</summary>
+            <div class="fold-body download-list">
+              <button class="btn btn--secondary" data-export="pdf" type="button">PDF Report</button>
+              <button class="btn btn--secondary" data-export="txt" type="button">TXT Transcript</button>
+              <button class="btn btn--secondary" data-export="json" type="button">JSON Data</button>
+              <button class="btn btn--secondary" id="export-chat-pdf" data-export="chat-pdf" type="button">Download chat history</button>
+            </div>
+          </details>
+          <details class="fold" open>
+            <summary>
+              Summary
+              <button class="copy-btn" data-copy="summary" type="button">Copy</button>
+            </summary>
+            <div class="fold-body">
+              <div class="skeleton" id="sk-summary"></div>
+              <div id="summary-text" class="prose"></div>
+            </div>
+          </details>
+          <details class="fold" open>
+            <summary>
+              Key Decisions
+              <button class="copy-btn" data-copy="decisions" type="button">Copy</button>
+            </summary>
+            <div class="fold-body">
+              <div class="skeleton" id="sk-decisions"></div>
+              <div id="decisions-list"></div>
+            </div>
+          </details>
+          <details class="fold" open id="discussion-fold">
+            <summary>
+              Discussion Points
+              <button class="copy-btn" data-copy="discussion" type="button">Copy</button>
+            </summary>
+            <div class="fold-body">
+              <div class="skeleton" id="sk-discussion"></div>
+              <div id="discussion-list"></div>
+            </div>
+          </details>
+          <details class="fold">
+            <summary>Action Items</summary>
+            <div class="fold-body">
+              <div class="table-toolbar">
+                <button class="btn btn--secondary" id="export-csv" type="button">Export CSV</button>
+              </div>
+              <div id="actions-empty" class="empty" hidden>
+                <p>No action items were identified in this meeting</p>
+              </div>
+              <table class="actions-table" id="actions-table" hidden>
+                <thead>
+                  <tr><th>Owner</th><th>Task</th><th>Due date</th><th>Priority</th></tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </details>
+          <details class="fold">
+            <summary>Transcript</summary>
+            <div class="fold-body">
+              <div class="transcript-toolbar">
+                <input id="transcript-search" type="search" placeholder="Search transcript…" />
+                <span class="match-count" id="match-count"></span>
+              </div>
+              <pre class="transcript" id="transcript-view"></pre>
+            </div>
+          </details>
+        </aside>
+      </div>
+    </section>
+  </main>
+  <script src="/js/app.js"></script>
+</body>
+</html>

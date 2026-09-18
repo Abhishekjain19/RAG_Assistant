@@ -1,0 +1,94 @@
+# =============================================================
+# AI Meeting Assistant - Python dependencies
+# Python 3.10+ supported (3.13 tested and working with fixes below)
+#
+# SYSTEM DEPENDENCY (not installable via pip):
+#   ffmpeg  ->  required by Whisper, yt-dlp and pydub
+#   Ubuntu/Debian : sudo apt install ffmpeg
+#   macOS         : brew install ffmpeg
+#   Windows       : winget install Gyan.FFmpeg  (or choco install ffmpeg)
+#
+# PYTHON 3.13 NOTE:
+#   audioop was removed from stdlib in Python 3.13.
+#   audioop-lts below is the official backport that restores it for pydub.
+#   Set PYTHONUTF8=1 env var on Windows to avoid Unicode print errors.
+# =============================================================
+
+
+# ---------- UI ----------
+streamlit>=1.37.0
+fastapi>=0.115.0
+uvicorn>=0.30.0
+python-multipart>=0.0.9
+
+
+# ---------- Audio acquisition ----------
+yt-dlp>=2024.8.6            # YouTube / URL audio download
+pydub>=0.25.1               # trimming, format conversion, chunking
+static-ffmpeg>=2.5          # provides bundled ffmpeg for yt-dlp and pydub
+ffmpeg-python>=0.2.0        # optional: programmatic ffmpeg calls
+soundfile>=0.12.1           # reliable WAV read/write for uploaded files
+audioop-lts>=0.2.1          # Python 3.13+: backport of removed audioop module (required by pydub)
+imageio-ffmpeg>=0.5.0       # ships a bundled ffmpeg binary (fallback if system ffmpeg not on PATH)
+
+
+# ---------- Transcription (local Whisper) ----------
+# Option A (reference implementation, simple):
+openai-whisper>=20231117
+# Option B (4-8x faster on CPU, lower RAM - swap in if Option A is slow):
+# faster-whisper>=1.0.3
+
+# Torch is pulled in by whisper, but pin it explicitly so you control
+# the build. The line below installs the CPU build.
+# For NVIDIA GPU, install torch separately FIRST, e.g.:
+#   pip install torch torchaudio --index-url https://download.pytorch.org/whl/cu121
+torch>=2.2.0
+torchaudio>=2.2.0
+
+
+# ---------- Hindi -> English translation ----------
+# Whisper can translate directly with task="translate".
+# These are for a dedicated MarianMT / NLLB pass on the transcript text.
+transformers>=4.44.0
+sentencepiece>=0.2.0        # REQUIRED by MarianMT/NLLB tokenizers
+sacremoses>=0.1.1           # Marian detokenisation
+langdetect>=1.0.9           # auto-detect hi vs en before translating
+
+
+# ---------- LLM orchestration (LangChain LCEL) ----------
+langchain>=0.3.0
+langchain-core>=0.3.0
+langchain-community>=0.3.0
+langchain-text-splitters>=0.3.0
+langchain-google-genai>=2.0.0  # ChatGoogleGenerativeAI wrapper
+langchain-mistralai>=0.2.0  # ChatMistralAI wrapper (kept for reference)
+
+
+# ---------- RAG: vector store + embeddings ----------
+chromadb>=0.5.5
+langchain-chroma>=0.1.4
+langchain-huggingface>=0.1.0
+sentence-transformers>=3.0.1   # e.g. all-MiniLM-L6-v2, BAAI/bge-small-en-v1.5
+huggingface-hub>=0.24.0
+
+# Chroma needs sqlite3 >= 3.35. Streamlit Community Cloud and some
+# older Linux images ship an older one. If you hit
+# "unsupported version of sqlite3", uncomment the next line and add
+# the pysqlite3 swap shim at the top of your entrypoint (see notes).
+# pysqlite3-binary>=0.5.3
+
+
+# ---------- Export ----------
+fpdf2>=2.7.9                # lightweight PDF export
+# reportlab>=4.2.0          # alternative if you need richer layout
+markdown>=3.6               # optional: render summary markdown before PDF
+
+
+# ---------- Utilities ----------
+python-dotenv>=1.0.1        # MISTRAL_API_KEY etc.
+tenacity>=8.2.0             # retry Gemini 429 / rate-limit responses
+pydantic>=2.8.0
+tiktoken>=0.7.0             # token counting for chunking budgets
+tqdm>=4.66.0
+numpy>=1.26.0
+pandas>=2.2.0               # action-item tables in Streamlit
