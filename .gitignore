@@ -10,7 +10,7 @@ __pycache__/
 .env
 
 # Generated / downloaded media and indexes
-downloades/
+downloads/
 vector_db/
 
 # Editor / OS

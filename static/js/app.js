@@ -295,7 +295,12 @@
     $$("[data-export]").forEach((btn) =>
       btn.addEventListener("click", () => downloadExport(btn.dataset.export))
     );
-    $("#new-analysis").addEventListener("click", () => {
+    $("#new-analysis").addEventListener("click", async () => {
+      try {
+        await fetch("/api/cleanup", { method: "POST" });
+      } catch (err) {
+        console.warn("Cleanup request error:", err);
+      }
       state.sessionId = null;
       state.results = null;
       state.file = null;
@@ -452,8 +457,7 @@
     else content.innerHTML = `<div class="md"></div><span class="cursor"></span>`;
     const meta = document.createElement("div");
     meta.className = "msg-meta";
-    meta.innerHTML = `<span>${new Date().toLocaleTimeString()}</span><button type="button" class="copy-btn">Copy</button>`;
-    meta.querySelector("button").addEventListener("click", () => navigator.clipboard.writeText(text));
+    meta.innerHTML = `<span>${new Date().toLocaleTimeString()}</span>`;
     content.appendChild(meta);
     el.appendChild(avatar);
     el.appendChild(content);
@@ -531,7 +535,6 @@
       $("#chat-input").value = "";
       autoResize($("#chat-input"));
       setSendEnabled();
-      ai.querySelector(".copy-btn")?.addEventListener("click", () => navigator.clipboard.writeText(full));
     }
   }
 
@@ -569,7 +572,7 @@
       }
       sendChat(input.value.trim());
     });
-    $("#sources-toggle").addEventListener("click", () => $("#sources-panel").classList.toggle("is-open"));
+    $("#sources-toggle")?.addEventListener("click", () => $("#sources-panel")?.classList.toggle("is-open"));
   }
 
   document.addEventListener("click", (e) => {

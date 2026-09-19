@@ -47,8 +47,10 @@ def clean_plain(text: str) -> str:
 def clean_title(text: str) -> str:
     if not text:
         return "Meeting Notes"
-    line = strip_code_fences(text).splitlines()[0]
-    line = strip_heading_markers(line)
+    lines = strip_code_fences(text).splitlines()
+    if not lines:
+        return "Meeting Notes"
+    line = strip_heading_markers(lines[0])
     line = strip_inline_markdown(line)
     return line.strip().strip(" \"'") or "Meeting Notes"
 

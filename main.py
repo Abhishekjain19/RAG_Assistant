@@ -21,9 +21,19 @@ from core.text_clean import clean_list_item, clean_plain, strip_inline_markdown
 from core.rag_engine import ask_question, build_rag_chain
 from core.transcriber import transcribe_chunk
 from core.vector_store import get_retriever, load_vector_store
+from core.services.cleanup import clear_all
 from utils.audio_processor import DOWNLOAD_DIR, process_input
 
 load_dotenv()
+
+# Background task for periodic cleanup of expired sessions
+async def periodic_cleanup() -> None:
+    """Continuously purge expired sessions every 5 minutes."""
+    while True:
+        await asyncio.sleep(300)  # 5 minutes
+        _purge_expired()
+
+
 
 SESSION_TTL = timedelta(hours=2)
 PIPELINE_STEPS = [
@@ -112,6 +122,9 @@ def _purge_expired() -> None:
         ]
         for sid in expired:
             sessions.pop(sid, None)
+        if not sessions and expired:
+            clear_all()
+
 
 
 def get_session(session_id: str) -> Session:
@@ -435,8 +448,16 @@ def run_session_job(session_id: str) -> None:
                 "active",
                 f"Transcribing segment {i + 1} / {len(chunks)}…",
             )
-            parts.append(transcribe_chunk(chunk, language=engine_language))
+            parts.append(
+                transcribe_chunk(
+                    chunk, language=engine_language, model_name=session.quality
+                )
+            )
         transcript = " ".join(parts).strip()
+        if not transcript:
+            raise ValueError(
+                "Transcription produced no text. Check the audio source and language."
+            )
         emit(session, "transcribing", "done", "Transcription complete")
 
         if engine_language == "hinglish":
@@ -506,6 +527,7 @@ app.add_middleware(
 @app.on_event("startup")
 async def _startup() -> None:
     app.state.loop = asyncio.get_running_loop()
+    asyncio.create_task(periodic_cleanup())
 
 
 @app.post("/api/upload")
@@ -538,6 +560,11 @@ async def upload(request: Request, background_tasks: BackgroundTasks):
     if not source:
         raise HTTPException(status_code=400, detail="Provide a file or a URL")
 
+    # Clear previous session downloads and vector DB space, preserving current source file if local
+    with sessions_lock:
+        sessions.clear()
+    clear_all(preserve_file=source if os.path.exists(source) else None)
+
     quality = (quality or "small").lower()
     if quality not in {"tiny", "base", "small", "medium"}:
         quality = "small"
@@ -548,6 +575,16 @@ async def upload(request: Request, background_tasks: BackgroundTasks):
         sessions[session.id] = session
     background_tasks.add_task(run_session_job_async, session.id)
     return {"session_id": session.id}
+
+
+@app.post("/api/cleanup")
+def api_cleanup():
+    with sessions_lock:
+        sessions.clear()
+    clear_all()
+    return {"status": "success", "message": "Downloads and vector DB cleared"}
+
+
 
 
 @app.websocket("/ws/{session_id}")
@@ -586,6 +623,27 @@ def results(session_id: str):
 
 class ChatPayload(BaseModel):
     message: str
+
+
+def _llm_chunk_text(chunk) -> str:
+    if chunk is None:
+        return ""
+    if isinstance(chunk, str):
+        return chunk
+    content = getattr(chunk, "content", None)
+    if isinstance(content, str):
+        return content
+    if isinstance(content, list):
+        parts: list[str] = []
+        for part in content:
+            if isinstance(part, str):
+                parts.append(part)
+            elif isinstance(part, dict):
+                parts.append(str(part.get("text") or ""))
+            else:
+                parts.append(str(getattr(part, "text", "") or ""))
+        return "".join(parts)
+    return ""
 
 
 def _source_cards(question: str) -> list[dict]:
@@ -634,8 +692,10 @@ async def chat(session_id: str, payload: ChatPayload):
                 streamed = False
                 try:
                     for chunk in session.rag_chain.stream(question):
+                        token = _llm_chunk_text(chunk)
+                        if not token:
+                            continue
                         streamed = True
-                        token = chunk if isinstance(chunk, str) else str(chunk)
                         parts.append(token)
                         asyncio.run_coroutine_threadsafe(queue.put(token), loop).result()
                 except Exception:
@@ -657,7 +717,13 @@ async def chat(session_id: str, payload: ChatPayload):
         while True:
             item = await queue.get()
             if isinstance(item, dict) and item.get("done"):
-                payload = {"token": "", "sources": item.get("sources") or [], "done": True}
+                payload = {
+                    "token": "",
+                    "sources": item.get("sources") or [],
+                    "done": True,
+                }
+                if item.get("error"):
+                    payload["error"] = item["error"]
                 yield f"data: {json.dumps(payload)}\n\n"
                 break
             yield f"data: {json.dumps({'token': item or '', 'sources': []})}\n\n"

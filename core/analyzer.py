@@ -1,3 +1,5 @@
+import hashlib
+
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import RunnableLambda, RunnablePassthrough
@@ -25,7 +27,7 @@ _EMPTY = {
     "suggested_questions": "",
 }
 
-_cache: dict[int, dict] = {}
+_cache: dict[str, dict] = {}
 
 
 def _chain(llm):
@@ -106,7 +108,7 @@ def _parse_sections(raw: str) -> dict:
 
 def analyze_meeting(transcript: str) -> dict:
     """One Gemini request for title, summary, and extractions. Cached per transcript."""
-    key = hash(transcript)
+    key = hashlib.sha256((transcript or "").encode("utf-8")).hexdigest()
     if key not in _cache:
         raw = invoke_with_fallback(
             lambda llm: _chain(llm),
@@ -115,3 +117,9 @@ def analyze_meeting(transcript: str) -> dict:
         )
         _cache[key] = _parse_sections(raw)
     return _cache[key]
+
+
+def clear_analyzer_cache() -> None:
+    """Clear memory cache of transcript analyses."""
+    _cache.clear()
+

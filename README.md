@@ -118,7 +118,7 @@ Requirements.txt     Python dependencies
 .env.example         Environment variable template
 ```
 
-Audio downloads land in `downloades/`; Chroma data in `vector_db/`. Both are gitignored.
+Audio downloads land in `downloads/`; Chroma data in `vector_db/`. Both are gitignored.
 
 ## Notes
 
